@@ -7,10 +7,15 @@ package com.mycompany.practica1;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  *
@@ -31,16 +36,36 @@ public class Cliente_Files {
         this.dir = dir;
     }
     
-    public void EnviarArchivo() throws IOException{
+    public void EnviarArchivo(ArrayList <File> archivos) throws IOException{
         
         Socket cl = new Socket(dir, puerto);
         System.out.println("Conexion establecida..\n Transfiriendo archivo..");
         
         
-        BufferedInputStream bis = new BufferedInputStream(cl.getInputStream());
-
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("duke1_1.png"));
+        DataInputStream dis = new DataInputStream(cl.getInputStream());
+        DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
         
+        dos.writeInt(archivos.size());
+        dos.flush();
+        
+        //String nombre = dis.readUTF();
+        int n = 0;
+        byte[] b = new byte[2048];
+        for (int i = 0; i < archivos.size(); i++) {
+            dos.writeUTF(archivos.get(i).getName());
+            dos.flush();
+            
+            FileInputStream fis = new FileInputStream(archivos.get(i));
+            n = fis.read(b);
+            while(n != -1){
+                dos.write(b, 0, n);
+                dos.flush();
+            }
+            
+            fis.close();
+        }
+        
+        dos.close();
     }
     
     /***************************************************************************************
