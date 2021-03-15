@@ -9,6 +9,10 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 
@@ -17,11 +21,12 @@ import javax.swing.filechooser.FileSystemView;
  * @author tdwda
  */
 public class ClienteGUI extends JFrame implements ActionListener{
+    private Cliente_Files ClienteOpt = new Cliente_Files();
     private JFrame Ventana = new JFrame();
     private JButton btn_elegir, btn_enviar, btn_eliminar, btn_descargar, btn_crear;
     private JLabel titulo_seleccion, titulo_server;
     private DefaultListModel<File> fileListModel = new DefaultListModel<>();
-    private JList<File> fileJList = new JList<>(fileListModel);
+    private JList<File> fileList = new JList<>(fileListModel);
     private JList<String> serverFileList = new JList<>();
     
     public ClienteGUI(){
@@ -95,15 +100,15 @@ public class ClienteGUI extends JFrame implements ActionListener{
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBounds(30, 50, 400, 350);
         
-        //fileJList.setBounds(15, 15, 500, 250);
-        fileJList.setVisibleRowCount(15);
-        fileJList.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        fileJList.setLayout(new BorderLayout(3, 3));
-        //fileJList.setPrototypeCellValue(new File("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"));
+        //fileList.setBounds(15, 15, 500, 250);
+        fileList.setVisibleRowCount(15);
+        fileList.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        fileList.setLayout(new BorderLayout(3, 3));
+        //fileList.setPrototypeCellValue(new File("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"));
         
-        JScrollPane scrollPane = new JScrollPane(fileJList);
-        scrollPane.setViewportView(fileJList);
-        fileJList.setLayoutOrientation(JList.VERTICAL);
+        JScrollPane scrollPane = new JScrollPane(fileList);
+        scrollPane.setViewportView(fileList);
+        fileList.setLayoutOrientation(JList.VERTICAL);
         panel.add(scrollPane);
         
         this.add(panel);
@@ -149,6 +154,25 @@ public class ClienteGUI extends JFrame implements ActionListener{
                      // add all files to the model
                     fileListModel.addElement(file);
                 }
+            }
+            
+        }else if(evento.equals("Enviar")){
+            
+            
+            if(fileList.getModel().getSize() == 0){
+                JOptionPane.showMessageDialog(null, 
+                        "No ha seleccionado ningun archivo para enviar");
+            }else{
+                ArrayList<File> archivos = new ArrayList();
+                for (int i = 0; i < fileList.getModel().getSize(); i++) {
+                    archivos.add(fileList.getModel().getElementAt(i));
+                }
+                try {
+                    ClienteOpt.enviarArchivo(archivos, "C:\\Users\\tdwda\\OneDrive\\Escritorio\\Servidor");
+                } catch (IOException ex) {
+                    Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
             }
             
         }
