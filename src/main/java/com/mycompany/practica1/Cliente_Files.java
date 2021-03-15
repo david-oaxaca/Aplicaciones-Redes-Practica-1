@@ -15,7 +15,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  *
@@ -25,46 +29,64 @@ public class Cliente_Files {
     
     private int puerto;
     private String dir;
+    private String destino;
+    
+    
     
     public Cliente_Files(){
         this.puerto = 4000;
         this.dir = "localhost";
+        this.destino = "";
     }
     
-    public Cliente_Files(int puerto, String dir){
+    public Cliente_Files(int puerto, String dir, String Destino){
         this.puerto = puerto;
         this.dir = dir;
+        this.destino = Destino;
     }
+    
+
     
     public void EnviarArchivo(ArrayList <File> archivos) throws IOException{
         
         Socket cl = new Socket(dir, puerto);
         System.out.println("Conexion establecida..\n Transfiriendo archivo..");
         
-        
-        DataInputStream dis = new DataInputStream(cl.getInputStream());
-        DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
+        //DataInputStream dis = new DataInputStream(cl.getInputStream());
+        BufferedOutputStream bos = new BufferedOutputStream(cl.getOutputStream());
+        DataOutputStream dos = new DataOutputStream(bos);
         
         dos.writeInt(archivos.size());
         dos.flush();
         
-        //String nombre = dis.readUTF();
-        int n = 0;
-        byte[] b = new byte[2048];
-        for (int i = 0; i < archivos.size(); i++) {
-            dos.writeUTF(archivos.get(i).getName());
+        for(File archivo : archivos){
+            
+            /*if(archivo.isDirectory()){
+                System.out.println("Es directorio");
+                File [] Dir_contenido = archivo.listFiles();
+                ArrayList <File> Dir_archivos = new ArrayList(Arrays.asList(Dir_contenido));
+                EnviarArchivo(Dir_archivos);
+            }*/
+            
+            byte[] b = new byte[(int)archivo.length()];
+            
+            dos.writeLong(archivo.length());
             dos.flush();
             
-            FileInputStream fis = new FileInputStream(archivos.get(i));
-            n = fis.read(b);
-            while(n != -1){
-                dos.write(b, 0, n);
-                dos.flush();
-            }
+            dos.writeUTF(archivo.getName());
+            dos.flush();
             
-            fis.close();
+            
+            FileInputStream fis = new FileInputStream(archivo);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            int n = 0;
+            while((n = bis.read(b, 0, b.length)) != -1){
+                bos.write(b, 0, n);
+                bos.flush();
+            }
+            System.out.println("Archivo copiado....");
         }
-        
+        bos.close();
         dos.close();
     }
     
@@ -87,7 +109,7 @@ public class Cliente_Files {
         }//while
         bis.close();
         bos.close();
-        System.out.println("Archivo copiado....");	
+        	
     }//main
 
     ***************************************************************************************/
