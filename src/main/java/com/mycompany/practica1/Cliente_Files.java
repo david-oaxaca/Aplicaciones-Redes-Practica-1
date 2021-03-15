@@ -33,8 +33,8 @@ public class Cliente_Files {
     private int puerto;
     private String dir;
     private String destino;
-    //BufferedOutputStream bos;
-    //DataOutputStream dos;
+    BufferedOutputStream bos;
+    DataOutputStream dos;
     
     
     
@@ -43,11 +43,6 @@ public class Cliente_Files {
         this.dir = "localhost";
         this.destino = "";
         
-        /*try {
-            crearConexion();
-        } catch (IOException ex) {
-            Logger.getLogger(Cliente_Files.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
     }
     
     public Cliente_Files(int puerto, String dir, String Destino){
@@ -55,22 +50,30 @@ public class Cliente_Files {
         this.dir = dir;
         this.destino = Destino;
         
-        /*try {
-            crearConexion();
-        } catch (IOException ex) {
-            Logger.getLogger(Cliente_Files.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
     }
     
     public void crearConexion() throws IOException{
         cl = new Socket(dir, puerto);
         System.out.println("Conexion establecida...\n ");
+        
+    }
+    
+    public void transferirArchivo(ArrayList <File> archivos, String path) throws IOException{
+        crearConexion();
+        bos = new BufferedOutputStream(cl.getOutputStream());
+        dos = new DataOutputStream(bos);
+        
+        dos.writeInt(getTam(archivos));
+        dos.flush();
+        
+        enviarArchivo(archivos, path);
+        
+        bos.close();
+        dos.close();
     }
 
     
     public void enviarArchivo(ArrayList <File> archivos, String path) throws IOException{
-        
-        //DataInputStream dis = new DataInputStream(cl.getInputStream());
         
         for(File archivo : archivos){
             
@@ -82,12 +85,6 @@ public class Cliente_Files {
                 enviarArchivo(Dir_archivos, path + "\\" + archivo.getName());
                 
             }else{
-                crearConexion();
-                BufferedOutputStream bos = new BufferedOutputStream(cl.getOutputStream());
-                DataOutputStream dos = new DataOutputStream(bos);
-        
-                //dos.writeInt(archivos.size());
-                //dos.flush();
                 
                 byte[] b = new byte[(int)archivo.length()];
                 
@@ -110,40 +107,28 @@ public class Cliente_Files {
                 System.out.println("Archivo copiado....");
          
                 bis.close();
-                bos.close();
-                dos.close();
+                bos.flush();
+                dos.flush();
             }
             
         }
         
     }
     
-    /*public void transferArchivos(ArrayList <File> archivos, String path, BufferedOutputStream bos,
-            DataOutputStream  dos) throws IOException{
+    public int getTam(ArrayList <File> archivos){
         
-    }*/
+        int tam = 0;
+        
+        for(File archivo : archivos){
+            if(archivo.isDirectory()){
+                ArrayList <File> Dir_archivos = new ArrayList(Arrays.asList(archivo.listFiles()));
+                tam += getTam(Dir_archivos);
+            }else{
+                tam ++;
+            }
+        }
     
-    /***************************************************************************************
-    public static void main(String[] args) throws Exception{
-        String dir= "localhost";
-        int puerto= 4000;
-
-        Socket cl = new Socket(dir, puerto);
-        System.out.println("Cliente conectado..\n transfiriendo archivo..");
-        BufferedInputStream bis = new BufferedInputStream(cl.getInputStream());
-
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("duke1_1.png"));
-        cl.setSoTimeout(3000);
-        byte[] buf = new byte[1024];
-        int leidos;
-        while((leidos=bis.read(buf,0,buf.length))!=-1){
-            bos.write(buf,0,leidos);
-            bos.flush();
-        }//while
-        bis.close();
-        bos.close();
-        	
-    }//main
-
-    ***************************************************************************************/
+        return tam;
+    }
+    
 }

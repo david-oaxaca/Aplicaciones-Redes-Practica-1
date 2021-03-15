@@ -168,7 +168,7 @@ public class ClienteGUI extends JFrame implements ActionListener{
                     archivos.add(fileList.getModel().getElementAt(i));
                 }
                 try {
-                    ClienteOpt.enviarArchivo(archivos, "C:\\Users\\tdwda\\OneDrive\\Escritorio\\Servidor");
+                    ClienteOpt.transferirArchivo(archivos, "C:\\Users\\tdwda\\OneDrive\\Escritorio\\Servidor");
                 } catch (IOException ex) {
                     Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
