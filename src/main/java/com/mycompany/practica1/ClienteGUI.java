@@ -28,6 +28,7 @@ public class ClienteGUI extends JFrame implements ActionListener{
     private DefaultListModel<File> fileListModel = new DefaultListModel<>();
     private JList<File> fileList = new JList<>(fileListModel);
     private JList<String> serverFileList = new JList<>();
+    private String path = "C:\\Users\\tdwda\\OneDrive\\Escritorio\\Servidor";
     
     public ClienteGUI(){
         initVentana("Practica 1");
@@ -129,6 +130,25 @@ public class ClienteGUI extends JFrame implements ActionListener{
         
         this.add(panel_server);
         
+        try {
+            actualizarListaServer();
+        } catch (IOException ex) {
+            Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
+    public void actualizarListaServer() throws IOException{
+        ArrayList <String> ArchiServer = new ArrayList();
+        DefaultListModel model = new DefaultListModel();
+        
+        ArchiServer = ClienteOpt.getServerArchivos(path);
+                    
+        for (int i = 0; i < ArchiServer.size(); i++) {
+            model.addElement(ArchiServer.get(i)); // <-- Add item to model
+        }
+
+        serverFileList.setModel(model);
     }
 
     @Override
@@ -136,7 +156,9 @@ public class ClienteGUI extends JFrame implements ActionListener{
         
         String evento = e.getActionCommand();
         
-        if(evento.equals("Escoger archivos")){
+        if(evento.equals("Escoger archivos") || evento.equals("Cambiar archivos")){
+            
+            btn_elegir.setText("Cambiar archivos");
             
             JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
             
@@ -168,13 +190,44 @@ public class ClienteGUI extends JFrame implements ActionListener{
                     archivos.add(fileList.getModel().getElementAt(i));
                 }
                 try {
-                    ClienteOpt.transferirArchivo(archivos, "C:\\Users\\tdwda\\OneDrive\\Escritorio\\Servidor");
+                    
+                    ClienteOpt.transferirArchivo(archivos, path);
+                    JOptionPane.showMessageDialog(null, 
+                        "Archivos transferidos exitosamente");
+                    fileListModel.removeAllElements();
+                    
+                    try {
+                        actualizarListaServer();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
                 } catch (IOException ex) {
                     Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
+                btn_elegir.setText("Escoger archivos");
             }
             
+        }else if(evento.equals("Eliminar")){
+            
+        }else if(evento.equals("Crear carpeta")){
+            
+            String nombre = JOptionPane.showInputDialog("Introduzca el nombre de la nueva carpeta: ");
+            
+            if(nombre != null && !nombre.equals("")){
+                try {
+                    ClienteOpt.crearCarpeta(path, nombre);
+                    
+                    JOptionPane.showMessageDialog(null, 
+                        "Carpeta creada exitosamente");
+                    
+                    actualizarListaServer();
+                    
+                } catch (IOException ex) {
+                    Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
         
     }

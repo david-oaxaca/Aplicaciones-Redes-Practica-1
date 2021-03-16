@@ -63,7 +63,14 @@ public class Cliente_Files {
         bos = new BufferedOutputStream(cl.getOutputStream());
         dos = new DataOutputStream(bos);
         
-        dos.writeInt(getTam(archivos));
+        dos.writeInt(0);
+        dos.flush();
+        
+        int tam = getTam(archivos);
+        
+        System.out.println( tam + " Archivos a enviados");
+        
+        dos.writeInt(tam);
         dos.flush();
         
         enviarArchivo(archivos, path);
@@ -89,6 +96,7 @@ public class Cliente_Files {
                 byte[] b = new byte[(int)archivo.length()];
                 
                 dos.writeUTF(path);
+                dos.flush();
 
                 dos.writeLong(archivo.length());
                 dos.flush();
@@ -96,7 +104,7 @@ public class Cliente_Files {
                 dos.writeUTF(archivo.getName());
                 dos.flush();
 
-
+//0170
                 FileInputStream fis = new FileInputStream(archivo);
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 int n = 0;
@@ -109,10 +117,115 @@ public class Cliente_Files {
                 bis.close();
                 bos.flush();
                 dos.flush();
-            }
-            
+            }  
         }
+    }
+    
+    public void crearCarpeta(String path, String nueva_carpeta) throws IOException{
+        crearConexion();
+        bos = new BufferedOutputStream(cl.getOutputStream());
+        dos = new DataOutputStream(bos);
         
+        dos.writeInt(1);
+        dos.flush();
+        
+        System.out.println("");
+        
+        dos.writeUTF(path + "\\" + nueva_carpeta);
+        dos.flush();
+        
+        bos.close();
+        dos.close();
+    }
+    
+    public void eliminarArchivo(String path) throws IOException{
+        crearConexion();
+        bos = new BufferedOutputStream(cl.getOutputStream());
+        dos = new DataOutputStream(bos);
+        
+        dos.writeInt(2);
+        dos.flush();
+        
+        dos.writeUTF(path);
+        dos.flush();
+        
+        bos.close();
+        dos.close();
+    }
+    
+    public void peticionArchivo(String path, String peticion) throws IOException{
+        crearConexion();
+        bos = new BufferedOutputStream(cl.getOutputStream());
+        dos = new DataOutputStream(bos);
+        
+        dos.writeInt(3);
+        dos.flush();
+        
+        dos.writeUTF(peticion);
+        dos.flush();
+        
+        BufferedInputStream bis = new BufferedInputStream(cl.getInputStream());
+        DataInputStream dis = new DataInputStream(bis);
+            
+        File archi_Descarga;
+        
+        long FileLen = dis.readLong();
+        String nombre = dis.readUTF();
+
+        File destino = new File(path);
+        if (!destino.exists()) {
+            destino.mkdir();
+        }
+
+        archi_Descarga = new File(path + "\\" + nombre);
+
+        FileOutputStream fos =  new FileOutputStream(archi_Descarga);
+        bos = new BufferedOutputStream(fos);
+
+        for(int j = 0; j < FileLen; j++){ 
+            bos.write(bis.read());
+        }
+
+        System.out.println("Archivo transferido....");
+        
+        bis.close();
+        dis.close();
+        bos.close();
+        dos.close();
+    }
+    
+    public ArrayList <String> getServerArchivos(String path) throws IOException{
+        ArrayList <String> ArchiServer = new ArrayList();
+        
+        crearConexion();
+        bos = new BufferedOutputStream(cl.getOutputStream());
+        dos = new DataOutputStream(bos);
+        
+        dos.writeInt(4);
+        dos.flush();
+        
+        dos.writeUTF(path);
+        dos.flush();
+        
+        BufferedInputStream bis = new BufferedInputStream(cl.getInputStream());
+        DataInputStream dis = new DataInputStream(bis);
+            
+        int cantidad = dis.readInt();
+        String nombre = "";
+        for (int i = 0; i < cantidad; i++) {
+            
+            nombre = dis.readUTF();
+            ArchiServer.add(nombre);
+            
+        }    
+        bis.close();
+        dis.close();
+        bos.close();
+        dos.close();
+        
+        System.out.println("Lista recibida " );
+        
+        return ArchiServer;
     }
     
     public int getTam(ArrayList <File> archivos){
@@ -127,7 +240,6 @@ public class Cliente_Files {
                 tam ++;
             }
         }
-    
         return tam;
     }
     
