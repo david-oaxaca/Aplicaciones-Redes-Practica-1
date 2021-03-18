@@ -1,6 +1,8 @@
 package practica1_archivos;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
@@ -16,15 +18,37 @@ public class Archivo {
         ruta_servidor= ruta_madre + "/Servidor";
     }
     
+    public int getTam(File[] archivos){
+        int tam = 0;
+        for(File archivo : archivos){
+            if(archivo.isDirectory()){
+                File[] Dir_archivos = archivo.listFiles();
+                tam += getTam(Dir_archivos);
+            }else{
+                tam ++;
+            }
+        }
+        return tam;
+    }
+    
+    private void verificarCarpeta(File carpeta) {
+        if(!carpeta.exists()) {
+            carpeta.mkdir();
+        }
+    }
+    
+    public void crearCarpeta(String path_carpeta) {
+        verificarCarpeta(new File(ruta_servidor + "/" + path_carpeta));
+    }
+    
     public String getRutaServidor() {
+        verificarCarpeta(new File(ruta_servidor));
         return ruta_servidor;
     }
     
     public File[] getListaArchivosServidor() {
         File carpeta_servidor= new File(ruta_servidor);
-        if(!carpeta_servidor.exists()) {
-            carpeta_servidor.mkdir();
-        }
+        verificarCarpeta(carpeta_servidor);
         File[] lista_archivos= carpeta_servidor.listFiles(); 
         /*
         String[] lista_nombres_archivos= new String[lista_archivos.length];
@@ -57,8 +81,15 @@ public class Archivo {
         
         for(File archivo : lista_archivos) {
             if(archivo.getName().equals(nombre)) {
+                System.out.println("Archivo eliminado: " + nombre);
                 archivo.delete();
             }
         }
+    }
+    
+    public File crearArchivo(String path, String nombre) {
+        File carpeta = new File(path);
+        verificarCarpeta(carpeta);
+        return new File(ruta_servidor + "/" + path + "/" + nombre);
     }
 }

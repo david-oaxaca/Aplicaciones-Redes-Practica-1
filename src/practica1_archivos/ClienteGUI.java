@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package practica1_archivos;
 
 import java.awt.BorderLayout;
@@ -11,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -18,7 +14,8 @@ import javax.swing.filechooser.FileSystemView;
 
 /**
  *
- * @author tdwda
+ * @author David Madrigal Buendía
+ * @author David Arturo Oaxaca Pérez
  */
 public class ClienteGUI extends JFrame implements ActionListener{
     private Cliente_Files ClienteOpt = new Cliente_Files();
@@ -28,6 +25,7 @@ public class ClienteGUI extends JFrame implements ActionListener{
     private DefaultListModel<File> fileListModel = new DefaultListModel<>();
     private JList<File> fileList = new JList<>(fileListModel);
     private JList<String> serverFileList = new JList<>();
+    //private String path = "C:\\Users\\tdwda\\OneDrive\\Escritorio\\Servidor";
     
     public ClienteGUI(){
         initVentana("Practica 1");
@@ -51,9 +49,6 @@ public class ClienteGUI extends JFrame implements ActionListener{
     }
     
     public void addComponents(){
-        
-        //Inicializamos labels
-        
         titulo_seleccion = new JLabel("Archivos seleccionados");
         titulo_seleccion.setBounds(150, 10, 400, 30);
         titulo_seleccion.setVisible(true);
@@ -128,24 +123,44 @@ public class ClienteGUI extends JFrame implements ActionListener{
         panel_server.add(scrollPane_server);
         
         this.add(panel_server);
-        
+        try {
+            actualizarListaServer();
+        } catch (IOException ex) {
+            Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void actualizarListaServerConMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(null, mensaje);
+        fileListModel.removeAllElements();
+        try {
+            actualizarListaServer();
+        } catch (IOException ex) {
+            Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void actualizarListaServer() throws IOException{
+        ArrayList <String> ArchiServer = new ArrayList();
+        DefaultListModel model = new DefaultListModel();
+        ArchiServer = ClienteOpt.getServerArchivos();
+        for (int i = 0; i < ArchiServer.size(); i++) {
+            model.addElement(ArchiServer.get(i)); // <-- Add item to model
+        }
+        serverFileList.setModel(model);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        
         String evento = e.getActionCommand();
-        
-        if(evento.equals("Escoger archivos")){
+        if(evento.equals("Escoger archivos") || evento.equals("Cambiar archivos")){
+            btn_elegir.setText("Cambiar archivos");
             
             JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-            
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            
             chooser.setMultiSelectionEnabled(true);
             
             int r = chooser.showSaveDialog(null);
-            
             if(r == JFileChooser.APPROVE_OPTION){
                 //l.setText(chooser.getSelectedFile().getAbsolutePath());
                 fileListModel.clear();  // clear the model of prior files
@@ -155,28 +170,56 @@ public class ClienteGUI extends JFrame implements ActionListener{
                     fileListModel.addElement(file);
                 }
             }
-            
         }else if(evento.equals("Enviar")){
-            
-            
             if(fileList.getModel().getSize() == 0){
-                JOptionPane.showMessageDialog(null, 
-                        "No ha seleccionado ningun archivo para enviar");
+                JOptionPane.showMessageDialog(null, "No ha seleccionado ningun archivo para enviar");
             }else{
                 ArrayList<File> archivos = new ArrayList();
                 for (int i = 0; i < fileList.getModel().getSize(); i++) {
                     archivos.add(fileList.getModel().getElementAt(i));
                 }
                 try {
-                    ClienteOpt.enviarArchivo(archivos, "C:\\Users\\tdwda\\OneDrive\\Escritorio\\Servidor");
+                    ClienteOpt.transferirArchivo(archivos);
+                    actualizarListaServerConMensaje("Archivos transferidos exitosamente");
                 } catch (IOException ex) {
                     Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+                btn_elegir.setText("Escoger archivos");
             }
-            
+        }else if(evento.equals("Eliminar")){
+            if(serverFileList.getSelectedValuesList().isEmpty()){
+                JOptionPane.showMessageDialog(null, "No ha seleccionado ningun archivo para enviar");
+            }else{
+                List<String> archivos = serverFileList.getSelectedValuesList();
+                try {
+                    ClienteOpt.eliminarArchivos(archivos);
+                    actualizarListaServerConMensaje("Archivos borrados exitosamente");
+                } catch (IOException ex) {
+                    Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }else if(evento.equals("Crear carpeta")){
+            String nombre = JOptionPane.showInputDialog("Introduzca el nombre de la nueva carpeta: ");
+            if(nombre != null && !nombre.equals("")){
+                try {
+                    ClienteOpt.crearCarpeta("", nombre);//PATH
+                    actualizarListaServerConMensaje("Carpeta creada exitosamente");
+                } catch (IOException ex) {
+                    Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }else if(evento.equals("Descargar archivo")) {
+            if(serverFileList.getSelectedValuesList().isEmpty()){
+                JOptionPane.showMessageDialog(null, "No ha seleccionado ningun archivo para enviar");
+            }else{
+                List<String> archivos = serverFileList.getSelectedValuesList();
+                try {
+                    ClienteOpt.descargarArchivos(archivos);
+                    actualizarListaServerConMensaje("Archivos descargados exitosamente");
+                } catch (IOException ex) {
+                    Logger.getLogger(ClienteGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
-        
     }
-    
 }
