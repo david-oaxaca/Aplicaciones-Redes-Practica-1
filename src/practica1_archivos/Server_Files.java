@@ -70,7 +70,7 @@ public class Server_Files {
                 case 2: //Recibe la direccion del archivo para eliminarlo 
                     numero_archivos = dis.readInt();
                     for(int i = 0; i < numero_archivos; i++) {
-                        archivos_servidor.eliminarArchivo(dis.readUTF());
+                        archivos_servidor.eliminarArchivo(dis.readUTF(), "");
                     }
                     break;
                 case 3: //Recibe una peticion con el nombre del archivo que enviara al usuario

@@ -75,14 +75,31 @@ public class Archivo {
         return null;
     }
     
-    public void eliminarArchivo(String nombre) {
-        File carpeta_servidor= new File(ruta_servidor);
+    public void eliminarArchivo(String nombre, String dir) {
+       
+        if(dir.equals("")){
+            dir = ruta_servidor;
+        }
+        
+        File carpeta_servidor= new File(dir);
+        
         File[] lista_archivos= carpeta_servidor.listFiles(); 
         
         for(File archivo : lista_archivos) {
             if(archivo.getName().equals(nombre)) {
+                if(archivo.isDirectory()){//????
+                    System.out.println("Es directorio...");
+                    File [] Dir_contenido = archivo.listFiles();
+                    
+                    for(File Dir_archi : Dir_contenido){
+                        eliminarArchivo(Dir_archi.getName(), dir + "\\" + archivo.getName());
+                    }
+
+                }
+                
                 System.out.println("Archivo eliminado: " + nombre);
                 archivo.delete();
+                
             }
         }
     }
