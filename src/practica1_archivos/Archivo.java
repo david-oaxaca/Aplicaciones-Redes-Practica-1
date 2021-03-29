@@ -32,6 +32,10 @@ public class Archivo {
     }
     
     private void verificarCarpeta(File carpeta) {
+        if(!carpeta.getParentFile().exists()){
+            verificarCarpeta(carpeta.getParentFile());
+        }
+        
         if(!carpeta.exists()) {
             carpeta.mkdir();
         }
@@ -50,16 +54,7 @@ public class Archivo {
         File carpeta_servidor= new File(ruta_servidor);
         verificarCarpeta(carpeta_servidor);
         File[] lista_archivos= carpeta_servidor.listFiles(); 
-        /*
-        String[] lista_nombres_archivos= new String[lista_archivos.length];
-        
-        for(File archivo : lista_archivos) {
-            if(archivo.isFile()) {
-                
-            }else if(archivo.isDirectory()) {
-                
-            }
-        }*/
+
         return lista_archivos;
     }
     
@@ -106,7 +101,7 @@ public class Archivo {
     
     public File crearArchivo(String path, String nombre) {
         File carpeta = new File(ruta_servidor + "\\" + path);
-        verificarCarpeta(new File(ruta_servidor)); //Verificamos que previamente exista la ruta del servidor
+        //verificarCarpeta(new File(ruta_servidor)); //Verificamos que previamente exista la ruta del servidor
         verificarCarpeta(carpeta);
         return new File(ruta_servidor + "\\" + path + "\\" + nombre);
     }

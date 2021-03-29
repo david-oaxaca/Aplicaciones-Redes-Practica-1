@@ -122,7 +122,7 @@ public class Cliente_Files {
                 
                 String path= ruta + "\\" + "Descargas" + "\\" + dir;
                 
-                verificarCarpeta(new File(ruta + "\\" + "Descargas"));
+                //verificarCarpeta(new File(ruta + "\\" + "Descargas"));
                 File archivo= crearArchivo(path, nombre);
 
                 FileOutputStream fos =  new FileOutputStream(archivo);
@@ -147,6 +147,11 @@ public class Cliente_Files {
     }
     
     private void verificarCarpeta(File carpeta) {
+        if(!carpeta.getParentFile().exists()){
+            verificarCarpeta(carpeta.getParentFile());
+            
+        }
+        
         if(!carpeta.exists()) {
             carpeta.mkdir();
         }
